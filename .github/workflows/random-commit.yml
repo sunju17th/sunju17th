@@ -1,0 +1,41 @@
+name: Random Auto Commit
+
+on:
+  schedule:
+    # Chạy 2 lần 1 ngày. Ví dụ: 2h sáng và 14h chiều UTC (tương đương 9h sáng và 21h tối giờ Việt Nam)
+    - cron: '0 2,14 * * *'
+  workflow_dispatch: 
+
+jobs:
+  random_commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lắc xí ngầu và Commit
+        run: |
+          # Tạo số ngẫu nhiên từ 0 đến 99
+          CHANCE=$((RANDOM % 100))
+          
+          # Nếu số ngẫu nhiên nhỏ hơn 40 (tỉ lệ 40%)
+          if [ $CHANCE -lt 40 ]; then
+            echo "Con số may mắn: $CHANCE -> Tiến hành commit..."
+            
+            # Ghi thời gian hiện tại vào một file để tạo sự thay đổi trong code
+            echo "Auto commit lúc $(date)" >> activity-log.txt
+            
+            # Cấu hình user cho Git
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            
+            # Add, commit và push
+            git add activity-log.txt
+            git commit -m "Chore: Cập nhật activity log tự động"
+            git push
+          else
+            echo "Con số trúng thưởng là: $CHANCE -> Không trúng 40%, bỏ qua commit."
+          fi
