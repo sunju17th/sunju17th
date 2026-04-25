@@ -1,41 +1,48 @@
-name: Random Auto Commit
+name: Office Worker Auto Commit Bot
 
 on:
   schedule:
-    # Chạy 2 lần 1 ngày. Ví dụ: 2h sáng và 14h chiều UTC (tương đương 9h sáng và 21h tối giờ Việt Nam)
-    - cron: '0 2,14 * * *'
-  workflow_dispatch: 
+    # Chạy 2 lần mỗi ngày (00:00 và 12:00 UTC), TỪ THỨ HAI ĐẾN THỨ SÁU (1-5)
+    - cron: '0 0,12 * * 1-5'
+  workflow_dispatch:
 
 jobs:
-  random_commit:
+  auto-commit:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write 
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Lắc xí ngầu và Commit
+      - name: Xử lý tỷ lệ 40% và Commit ngẫu nhiên
         run: |
-          # Tạo số ngẫu nhiên từ 0 đến 99
-          CHANCE=$((RANDOM % 100))
+          CHANCE=$(( $RANDOM % 100 ))
           
-          # Nếu số ngẫu nhiên nhỏ hơn 40 (tỉ lệ 40%)
           if [ $CHANCE -lt 40 ]; then
-            echo "Con số may mắn: $CHANCE -> Tiến hành commit..."
+            echo "Tuyệt vời! Quay vào ô 40% thành công. Số quay được là: $CHANCE"
             
-            # Ghi thời gian hiện tại vào một file để tạo sự thay đổi trong code
-            echo "Auto commit lúc $(date)" >> activity-log.txt
+            MESSAGES=(
+              "Cập nhật tài liệu README.md"
+              "Sửa một lỗi hiển thị nhỏ (bug fix)"
+              "Tối ưu hóa hiệu suất mã nguồn"
+              "Thêm ghi chú (comments) cho code dễ hiểu hơn"
+              "Dọn dẹp code thừa (refactoring)"
+              "Cập nhật cấu hình dự án"
+              "Sửa lỗi đánh máy trong tài liệu"
+            )
             
-            # Cấu hình user cho Git
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
+            RANDOM_INDEX=$(( $RANDOM % ${#MESSAGES[@]} ))
+            COMMIT_MSG=${MESSAGES[$RANDOM_INDEX]}
             
-            # Add, commit và push
-            git add activity-log.txt
-            git commit -m "Chore: Cập nhật activity log tự động"
+            echo "Commit lúc $(date) - Nội dung: $COMMIT_MSG" >> auto-commit-log.txt
+            
+            git config --global user.name "GitHub Action Bot"
+            git config --global user.email "action@github.com"
+            
+            git add auto-commit-log.txt
+            git commit -m "$COMMIT_MSG"
             git push
+            
           else
-            echo "Con số trúng thưởng là: $CHANCE -> Không trúng 40%, bỏ qua commit."
+            echo "Hôm nay nhẹ nhàng, không commit. Số quay được là: $CHANCE"
           fi
